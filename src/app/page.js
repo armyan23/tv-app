@@ -1,95 +1,53 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client'
+import {useEffect, useState} from "react";
+import { SwiperSlide } from 'swiper/react';
+
+import MainMovie from "@/components/cards/MainMovie";
+import MovieCard from "@/components/cards/MovieCard";
+import Carousel from "@/components/carusel/Carousel";
+
+import data from "@/utils/data.json";
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    const prevSelected = typeof window === 'object' && JSON.parse(sessionStorage.getItem('movie')) || data.Featured
+    const [selected, setSelected] = useState(prevSelected)
+    const [movies, setMovies] = useState([])
+    const [isPlay, setIsPlay] = useState(false)
+
+    useEffect(() => {
+        const sortedByDate =  data.TendingNow.sort((x,y)=>{
+            const dateX = new Date(x.Date).getTime()
+            const dateY = new Date(y.Date).getTime()
+
+            if (dateX > dateY) return -1
+            if (dateX < dateY) return 1
+            return 0
+        })
+
+        setMovies(sortedByDate)
+    }, [])
+
+    const changMovie = (movie) => {
+        setIsPlay(false)
+        setSelected(movie)
+        sessionStorage.setItem('movie', JSON.stringify(movie))
+        setTimeout(()=>{
+            setIsPlay(true)
+        }, 2000)
+    }
+
+    return (
+        <div className='vh-100'>
+            <MainMovie movie={selected} isPlay={isPlay} setIsPlay={setIsPlay}/>
+            <div className="h-inherit d-flex gap-20 overflow-x a-end select-none">
+                <Carousel>
+                    {movies.map((movie) => (
+                        <SwiperSlide key={movie.Id}>
+                            <MovieCard movie={movie} changMovie={changMovie}/>
+                        </SwiperSlide>
+                    ))}
+                </Carousel>
+            </div>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    )
 }
